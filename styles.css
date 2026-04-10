@@ -138,11 +138,6 @@ textarea {
   align-items: center;
 }
 
-#nameFile {
-  display: none;
-}
-
-.upload-btn,
 button {
   border-radius: 999px;
   border: 1px solid transparent;
@@ -153,7 +148,6 @@ button {
   transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
 }
 
-.upload-btn,
 button.ghost {
   background: rgba(255, 255, 255, 0.72);
   border-color: var(--border);
@@ -170,7 +164,7 @@ button.secondary {
 }
 
 button:hover,
-.upload-btn:hover {
+button:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(15, 18, 22, 0.16);
 }
@@ -189,48 +183,6 @@ button-row,
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.83rem;
   color: #c23f00;
-}
-
-.admin-panel {
-  margin-top: 0.95rem;
-  border: 1px dashed rgba(17, 20, 25, 0.2);
-  border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.62);
-  padding: 0.75rem;
-}
-
-.admin-panel summary {
-  cursor: pointer;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.85rem;
-  color: #243043;
-}
-
-.admin-hint {
-  margin: 0.7rem 0 0.6rem;
-  color: var(--ink-soft);
-  font-size: 0.88rem;
-}
-
-.checkbox-label {
-  margin-bottom: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-weight: 600;
-}
-
-.checkbox-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-}
-
-.admin-status {
-  min-height: 1.2rem;
-  margin: 0.55rem 0 0;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.78rem;
-  color: #8a3f03;
 }
 
 .results-title-row {

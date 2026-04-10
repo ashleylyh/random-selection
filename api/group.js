@@ -1,6 +1,5 @@
 const LOCKED_BUNDLES = [
-  ["Ashley", "Mia"],
-  ["Noah", "Emma", "Lucas"]
+  ["王立動", "黃則睿","張巧蓁", "陳苡涵"]
 ];
 
 module.exports = (req, res) => {
@@ -8,7 +7,7 @@ module.exports = (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { names, groupCount, groupSize, adminToken, overrideBundles } = req.body || {};
+  const { names, groupCount, groupSize } = req.body || {};
 
   if (!Array.isArray(names) || names.length === 0) {
     return res.status(400).json({ error: "Provide at least one name." });
@@ -25,8 +24,7 @@ module.exports = (req, res) => {
 
   try {
     const normalizedNames = normalizeNames(names);
-    const selectedBundles = selectLockedBundles({ adminToken, overrideBundles });
-    const lockedSets = buildActiveLockedSets(normalizedNames, selectedBundles);
+    const lockedSets = buildActiveLockedSets(normalizedNames, LOCKED_BUNDLES);
     const groups = generateGroups({
       names: normalizedNames,
       lockedSets,
@@ -42,45 +40,6 @@ module.exports = (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
-
-function selectLockedBundles({ adminToken, overrideBundles }) {
-  if (overrideBundles === undefined) {
-    return LOCKED_BUNDLES;
-  }
-
-  if (!Array.isArray(overrideBundles)) {
-    throw new Error("Admin override bundles must be an array of name arrays.");
-  }
-
-  const expectedToken = process.env.ADMIN_TOKEN;
-  if (!expectedToken) {
-    throw new Error("ADMIN_TOKEN is not set on the server.");
-  }
-
-  if (String(adminToken || "") !== expectedToken) {
-    throw new Error("Invalid admin token.");
-  }
-
-  const normalizedBundles = overrideBundles.map((bundle, index) => {
-    if (!Array.isArray(bundle)) {
-      throw new Error(`Bundle ${index + 1} must be a list of names.`);
-    }
-
-    const uniqueMembers = [...new Set(
-      bundle
-        .map((member) => String(member || "").trim())
-        .filter(Boolean)
-    )];
-
-    if (uniqueMembers.length < 2) {
-      throw new Error(`Bundle ${index + 1} must have at least 2 names.`);
-    }
-
-    return uniqueMembers;
-  });
-
-  return normalizedBundles;
-}
 
 function normalizeNames(rawNames) {
   const seen = new Set();
