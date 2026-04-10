@@ -77,6 +77,10 @@ function buildActiveLockedSets(names, lockedBundles) {
 }
 
 function generateGroups({ names, lockedSets, groupCount, groupSize }) {
+  if (!Array.isArray(lockedSets) || lockedSets.length === 0) {
+    return generateFairGroups({ names, groupCount, groupSize });
+  }
+
   const totalPeople = names.length;
   const resolvedGroupCount = resolveGroupCount(totalPeople, groupCount, groupSize);
   const capacities = resolveCapacities(totalPeople, resolvedGroupCount, groupSize);
@@ -97,6 +101,36 @@ function generateGroups({ names, lockedSets, groupCount, groupSize }) {
   }
 
   throw new Error("Could not satisfy constraints. Adjust group settings.");
+}
+
+function generateFairGroups({ names, groupCount, groupSize }) {
+  const totalPeople = names.length;
+  const resolvedGroupCount = resolveGroupCount(totalPeople, groupCount, groupSize);
+  const capacities = resolveCapacities(totalPeople, resolvedGroupCount, groupSize);
+
+  const capacityTotal = capacities.reduce((sum, value) => sum + value, 0);
+  if (capacityTotal < totalPeople) {
+    throw new Error("Not enough total capacity for all names. Increase group size or count.");
+  }
+
+  const shuffledNames = shuffleArray(names);
+  const groups = capacities.map((capacity) => ({
+    members: [],
+    remaining: capacity
+  }));
+
+  shuffledNames.forEach((name) => {
+    const candidates = groups
+      .map((group, index) => ({ index, remaining: group.remaining }))
+      .filter(({ remaining }) => remaining > 0)
+      .map(({ index }) => index);
+
+    const chosenIndex = candidates[Math.floor(Math.random() * candidates.length)];
+    groups[chosenIndex].members.push(name);
+    groups[chosenIndex].remaining -= 1;
+  });
+
+  return groups.map((group) => ({ members: group.members }));
 }
 
 function fitLockedSetsToCapacity(lockedSets, maxCap) {
