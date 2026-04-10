@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Random Group Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-layer"></div>
+    <main class="app">
+      <header class="hero">
+        <p class="eyebrow">RANDOM GROUP STUDIO</p>
+        <h1>Build fair teams with backend bundle rules</h1>
+        <p class="subtitle">
+          Enter all names and group settings. The backend always keeps your hardcoded bundles together.
+        </p>
+      </header>
+
+      <section class="panel controls">
+        <div class="field-group">
+          <label for="namesInput">Names</label>
+          <textarea
+            id="namesInput"
+            placeholder="One per line, comma-separated, or mixed.&#10;Example:&#10;Ashley&#10;Mia, Noah"
+          ></textarea>
+          <div class="inline-actions">
+            <label class="upload-btn" for="nameFile">Import .txt/.csv</label>
+            <input id="nameFile" type="file" accept=".txt,.csv" />
+            <button id="sampleBtn" type="button" class="ghost">Load sample</button>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="field-group">
+            <label for="groupCount">Number of groups</label>
+            <input id="groupCount" type="number" min="1" placeholder="e.g. 4" />
+          </div>
+          <div class="field-group">
+            <label for="groupSize">People per group</label>
+            <input id="groupSize" type="number" min="1" placeholder="e.g. 5" />
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="generateBtn" type="button" class="primary">Generate Groups</button>
+          <button id="reshuffleBtn" type="button" class="secondary">Reshuffle</button>
+          <button id="copyBtn" type="button" class="ghost">Copy Results</button>
+        </div>
+
+        <details class="admin-panel">
+          <summary>Admin: Override bundled names</summary>
+          <p class="admin-hint">
+            Protected by secret token. Save here, then generate groups.
+          </p>
+          <div class="field-group">
+            <label for="adminToken">Admin token</label>
+            <input
+              id="adminToken"
+              type="password"
+              autocomplete="off"
+              placeholder="Enter ADMIN_TOKEN"
+            />
+          </div>
+          <div class="field-group">
+            <label for="adminBundles">Bundled names (one set per line)</label>
+            <textarea
+              id="adminBundles"
+              placeholder="Ashley, Mia&#10;Noah + Emma + Lucas"
+            ></textarea>
+          </div>
+          <div class="inline-actions">
+            <label class="checkbox-label" for="adminEnabled">
+              <input id="adminEnabled" type="checkbox" />
+              Use admin bundle override
+            </label>
+            <button id="adminSaveBtn" type="button" class="ghost">Save Admin Config</button>
+          </div>
+          <p id="adminStatus" class="admin-status" aria-live="polite"></p>
+        </details>
+
+        <p id="status" class="status" aria-live="polite"></p>
+      </section>
+
+      <section class="panel results-panel">
+        <div class="results-title-row">
+          <h2>Results</h2>
+          <p id="meta" class="meta"></p>
+        </div>
+        <div id="results" class="results"></div>
+      </section>
+    </main>
+
+    <script src="frontend.js"></script>
+  </body>
+</html>
