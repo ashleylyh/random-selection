@@ -72,19 +72,12 @@ function buildActiveLockedSets(names, lockedBundles) {
 }
 
 function generateGroups({ names, lockedSets, groupCount, groupSize }) {
-  const units = buildUnits(names, lockedSets);
   const totalPeople = names.length;
   const resolvedGroupCount = resolveGroupCount(totalPeople, groupCount, groupSize);
   const capacities = resolveCapacities(totalPeople, resolvedGroupCount, groupSize);
-
-  units.forEach((unit) => {
-    const maxCap = Math.max(...capacities);
-    if (unit.members.length > maxCap) {
-      throw new Error(
-        `Locked set (${unit.members.join(", ")}) is too large for current group settings.`
-      );
-    }
-  });
+  const maxCap = Math.max(...capacities);
+  const normalizedLockedSets = fitLockedSetsToCapacity(lockedSets, maxCap);
+  const units = buildUnits(names, normalizedLockedSets);
 
   const capacityTotal = capacities.reduce((sum, value) => sum + value, 0);
   if (capacityTotal < totalPeople) {
@@ -99,6 +92,31 @@ function generateGroups({ names, lockedSets, groupCount, groupSize }) {
   }
 
   throw new Error("Could not satisfy constraints. Adjust group settings.");
+}
+
+function fitLockedSetsToCapacity(lockedSets, maxCap) {
+  if (maxCap >= 2) {
+    const result = [];
+
+    lockedSets.forEach((set) => {
+      if (set.length <= maxCap) {
+        result.push(set);
+        return;
+      }
+
+      // Oversized locked sets are downgraded to smaller bundles, preferring pairs.
+      for (let i = 0; i < set.length; i += 2) {
+        const chunk = set.slice(i, i + Math.min(2, maxCap));
+        if (chunk.length >= 2) {
+          result.push(chunk);
+        }
+      }
+    });
+
+    return result;
+  }
+
+  return [];
 }
 
 function buildUnits(names, lockedSets) {

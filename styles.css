@@ -130,6 +130,10 @@ textarea {
   gap: 0.8rem;
 }
 
+.two-col .field-group + .field-group {
+  margin-top: 0;
+}
+
 .inline-actions {
   margin-top: 0.6rem;
   display: flex;
@@ -235,18 +239,6 @@ button-row,
 
 .group-card li + li {
   margin-top: 0.22rem;
-}
-
-.lock-chip {
-  display: inline-block;
-  margin-left: 0.3rem;
-  font-size: 0.66rem;
-  letter-spacing: 0.04em;
-  padding: 0.08rem 0.4rem;
-  border-radius: 999px;
-  color: #8a3f03;
-  background: #ffe6d7;
-  border: 1px solid #ffc8ab;
 }
 
 @keyframes reveal {

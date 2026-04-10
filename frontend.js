@@ -6,7 +6,6 @@ const statusEl = document.getElementById("status");
 const metaEl = document.getElementById("meta");
 
 let latestGroups = null;
-let latestLockedSets = [];
 
 document.getElementById("generateBtn").addEventListener("click", () => {
 	void buildAndRenderGroups();
@@ -50,7 +49,6 @@ async function buildAndRenderGroups() {
 		setStatus("請至少輸入一位成員名稱。");
 		metaEl.textContent = "";
 		latestGroups = null;
-		latestLockedSets = [];
 		return;
 	}
 
@@ -61,7 +59,6 @@ async function buildAndRenderGroups() {
 		setStatus("請至少填寫組數或每組人數其中一項。");
 		metaEl.textContent = "";
 		latestGroups = null;
-		latestLockedSets = [];
 		return;
 	}
 
@@ -86,15 +83,13 @@ async function buildAndRenderGroups() {
 		}
 
 		latestGroups = payload.groups;
-		latestLockedSets = payload.activeLockedSets || [];
-		renderGroups(latestGroups, latestLockedSets);
+		renderGroups(latestGroups);
 		setStatus("分組完成。", true);
 		metaEl.textContent = `共 ${names.length} 人，分成 ${latestGroups.length} 組`;
 	} catch (error) {
 		setStatus(error.message || "分組失敗，請檢查輸入內容。");
 		metaEl.textContent = "";
 		latestGroups = null;
-		latestLockedSets = [];
 	}
 }
 
@@ -117,9 +112,7 @@ function normalizeNames(raw) {
 	return result;
 }
 
-function renderGroups(groups, lockedSets) {
-	const lockedPairMap = buildLockedPairMap(lockedSets);
-
+function renderGroups(groups) {
 	groups.forEach((group, idx) => {
 		const card = document.createElement("article");
 		card.className = "group-card";
@@ -133,27 +126,12 @@ function renderGroups(groups, lockedSets) {
 			const item = document.createElement("li");
 			item.textContent = member;
 
-			if (lockedPairMap.has(member)) {
-				const chip = document.createElement("span");
-				chip.className = "lock-chip";
-				chip.textContent = "綁定";
-				item.appendChild(chip);
-			}
-
 			list.appendChild(item);
 		});
 
 		card.append(title, list);
 		resultsContainer.appendChild(card);
 	});
-}
-
-function buildLockedPairMap(lockedSets) {
-	const map = new Map();
-	lockedSets.forEach((set, idx) => {
-		set.forEach((name) => map.set(name, idx));
-	});
-	return map;
 }
 
 function parsePositiveInt(value) {
