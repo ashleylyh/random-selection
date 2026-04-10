@@ -1,10 +1,11 @@
-const LOCKED_BUNDLES = [
-  ["王力勳", "黃則睿","張巧蓁", "陳苡涵"], 
-  ["王力勳", "黃則睿"], ["王力勳", "張巧蓁"], ["王力勳", "陳苡涵"],
-  ["黃則睿", "王力勳"], ["黃則睿", "張巧蓁"], ["黃則睿", "陳苡涵"],
-  ["張巧蓁", "陳苡涵"], ["張巧蓁", "王力勳"], ["張巧蓁", "黃則睿"],
-  ["陳苡涵", "王力勳"], ["陳苡涵", "黃則睿"], ["陳苡涵", "張巧蓁"]
-
+const LOCKED_PROFILES = [
+  {
+    members: ["王力勳", "黃則睿", "張巧蓁", "陳苡涵"],
+    splitUnits: [
+      ["王力勳", "黃則睿"],
+      ["張巧蓁", "陳苡涵"]
+    ]
+  }
 ];
 
 module.exports = (req, res) => {
@@ -29,7 +30,19 @@ module.exports = (req, res) => {
 
   try {
     const normalizedNames = normalizeNames(names);
-    const lockedSets = buildActiveLockedSets(normalizedNames, LOCKED_BUNDLES);
+    const resolvedGroupCount = resolveGroupCount(
+      normalizedNames.length,
+      parsedGroupCount,
+      parsedGroupSize
+    );
+    const capacities = resolveCapacities(
+      normalizedNames.length,
+      resolvedGroupCount,
+      parsedGroupSize
+    );
+    const maxCap = Math.max(...capacities);
+    const lockedSets = buildActiveLockedSets(normalizedNames, LOCKED_PROFILES, maxCap);
+
     const groups = generateGroups({
       names: normalizedNames,
       lockedSets,
@@ -64,16 +77,84 @@ function normalizeNames(rawNames) {
   return result;
 }
 
-function buildActiveLockedSets(names, lockedBundles) {
+function buildActiveLockedSets(names, lockedProfiles, maxCap) {
   const nameLookup = new Map(names.map((name) => [name.toLowerCase(), name]));
+  const matchedSets = [];
 
-  return lockedBundles
-    .map((bundle) =>
-      bundle
-        .map((member) => nameLookup.get(member.toLowerCase()))
-        .filter(Boolean)
-    )
-    .filter((bundle) => bundle.length >= 2);
+  lockedProfiles.forEach((profile) => {
+    const fullSet = resolveMembersFromLookup(profile.members, nameLookup);
+    if (fullSet.length < 2) {
+      return;
+    }
+
+    // If current group capacity allows, keep the full bundle together.
+    if (maxCap >= fullSet.length) {
+      matchedSets.push(fullSet);
+      return;
+    }
+
+    // For small-group stage (e.g. size=2), enforce predefined pair splits.
+    const splitUnits = Array.isArray(profile.splitUnits) ? profile.splitUnits : [];
+    const resolvedSplits = splitUnits
+      .map((unit) => resolveMembersFromLookup(unit, nameLookup))
+      .filter((unit) => unit.length >= 2 && unit.length <= maxCap);
+
+    if (resolvedSplits.length > 0) {
+      matchedSets.push(...resolvedSplits);
+      return;
+    }
+
+    // Fallback when no explicit split is defined: chunk into pairs.
+    if (maxCap >= 2) {
+      for (let i = 0; i < fullSet.length; i += 2) {
+        const chunk = fullSet.slice(i, i + Math.min(2, maxCap));
+        if (chunk.length >= 2) {
+          matchedSets.push(chunk);
+        }
+      }
+    }
+  });
+
+  return dedupeLockedSets(matchedSets);
+}
+
+function resolveMembersFromLookup(memberList, nameLookup) {
+  const unique = new Set();
+  const resolved = [];
+
+  memberList
+    .map((member) => nameLookup.get(String(member || "").trim().toLowerCase()))
+    .filter(Boolean)
+    .forEach((member) => {
+      const key = member.toLowerCase();
+      if (!unique.has(key)) {
+        unique.add(key);
+        resolved.push(member);
+      }
+    });
+
+  return resolved;
+}
+
+function dedupeLockedSets(lockedSets) {
+  const seen = new Set();
+  const result = [];
+
+  lockedSets.forEach((set) => {
+    if (set.length < 2) {
+      return;
+    }
+    const key = set
+      .map((member) => member.toLowerCase())
+      .sort()
+      .join("|");
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(set);
+    }
+  });
+
+  return result;
 }
 
 function generateGroups({ names, lockedSets, groupCount, groupSize }) {

@@ -98,15 +98,25 @@ function normalizeNames(raw) {
 	const result = [];
 
 	raw
-		.split(/[\n,;]+/)
-		.map((name) => name.trim())
+		.split(/\n+/)
+		.map((line) => line.trim())
 		.filter(Boolean)
-		.forEach((name) => {
+		.forEach((line) => {
+			// Support pasted results like: 第 1 組（2 人）：Alice, Bob
+			const matchedGroupLine = line.match(/^[^:：]*[組组].*[:：]\s*(.+)$/);
+			const content = matchedGroupLine ? matchedGroupLine[1] : line;
+
+			content
+				.split(/[,，;；]+/)
+				.map((name) => name.trim())
+				.filter(Boolean)
+				.forEach((name) => {
 			const canonical = name.toLowerCase();
 			if (!seen.has(canonical)) {
 				seen.add(canonical);
 				result.push(name);
 			}
+				});
 		});
 
 	return result;
